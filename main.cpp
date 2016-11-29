@@ -8,10 +8,13 @@ using namespace std;
 int main(){
     DatabaseHelper db = DatabaseHelper();
 	db.addContact(Contact("John", "123-456-7890"));
-	vector<Contact*> johns = db.getContactByName("John");
+//	if (db.deleteRow(4)){
+//		cout <<  "Deleted row with rowid 4" << endl;
+//	}
+	vector<Contact*> johns = db.getAllContacts();
 	for (int i = 0; i < johns.size(); i++) {
 		johns[i]->printDetails();
 	}
-    cin.get();
+//    cin.get();
     return 0;
 }
