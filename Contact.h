@@ -7,11 +7,12 @@ using std::string;
 
 class Contact {
 public:
-	Contact(string name, string phoneNumber);
-	Contact(string name, string phoneNumber, int id);
+	Contact(string name, string phoneNumber = "",string address = "", string email = "", int id = 0);
 	virtual void printDetails();
 	string name;
 	string phoneNumber;
+	string address;
+	string email;
 	int id;
 };
 
