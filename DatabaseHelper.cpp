@@ -94,15 +94,18 @@ vector<Contact*> DatabaseHelper::getContactByName(string name) {
 	char *err_msg = 0;
 	const char* sql = tempSql.c_str();
 
-	sqlite3_stmt *stmt;
 	int rc = sqlite3_open("address_book.db", &db);
+	sqlite3_stmt *stmt;
 	if (rc == SQLITE_OK) {
 		rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 		if (name != "")
 			rc = sqlite3_bind_text(stmt, 1, name.c_str(), int(name.length()), SQLITE_TRANSIENT);
 		rc = sqlite3_step(stmt);
+		vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+		sqlite3_close(db);
+		return contacts;
 	}
-	vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+	vector<Contact*> contacts;
 	sqlite3_close(db);
 	return contacts;
 }
@@ -121,8 +124,11 @@ vector<Contact*> DatabaseHelper::getContactByPhoneNumber(string phoneNumber) {
 		if (phoneNumber != "")
 			rc = sqlite3_bind_text(stmt, 1, phoneNumber.c_str(), int(phoneNumber.length()), SQLITE_TRANSIENT);
 		rc = sqlite3_step(stmt);
+		vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+		sqlite3_close(db);
+		return contacts;
 	}
-	vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+	vector<Contact*> contacts;
 	sqlite3_close(db);
 	return contacts;
 }
@@ -140,8 +146,11 @@ vector<Contact*> DatabaseHelper::getContactByAddress(string address) {
 		if (address != "")
 			rc = sqlite3_bind_text(stmt, 1, address.c_str(), int(address.length()), SQLITE_TRANSIENT);
 		rc = sqlite3_step(stmt);
+		vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+		sqlite3_close(db);
+		return contacts;
 	}
-	vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+	vector<Contact*> contacts;
 	sqlite3_close(db);
 	return contacts;
 }
@@ -159,8 +168,11 @@ vector<Contact*> DatabaseHelper::getContactByEmail(string email) {
 		if (email != "")
 			rc = sqlite3_bind_text(stmt, 1, email.c_str(), int(email.length()), SQLITE_TRANSIENT);
 		rc = sqlite3_step(stmt);
+		vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+		sqlite3_close(db);
+		return contacts;
 	}
-	vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+	vector<Contact*> contacts;
 	sqlite3_close(db);
 	return contacts;
 }
@@ -178,8 +190,11 @@ vector<Contact*> DatabaseHelper::getContactById(int id) {
 		if (id != -1)
 			rc = sqlite3_bind_int(stmt, 1, id);
 		rc = sqlite3_step(stmt);
+		vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+		sqlite3_close(db);
+		return contacts;
 	}
-	vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+	vector<Contact*> contacts;
 	sqlite3_close(db);
 	return contacts;
 }
@@ -195,8 +210,11 @@ vector<Contact*> DatabaseHelper::getAllContacts(){
 	if (rc == SQLITE_OK) {
 		rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 		rc = sqlite3_step(stmt);
+		vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+		sqlite3_close(db);
+		return contacts;
 	}
-	vector<Contact*> contacts = getContactsFromDB(rc,stmt);
+	vector<Contact*> contacts;
 	sqlite3_close(db);
 	return contacts;
 }
@@ -214,6 +232,7 @@ vector<Contact*> DatabaseHelper::buildSelectQuery(string name, string phoneNumbe
 	string tempSqlAfter = "WHERE ";
 	int count = 0; // count is to keep track of sentence building and ? index
 	int n, p, a, e, i;
+	n = p = a = e = i= 0;
 
 	// only add name, phoneNumber, etc if they are set in parameters
 	if (name != "") {
@@ -288,6 +307,8 @@ vector<Contact*> DatabaseHelper::buildSelectQuery(string name, string phoneNumbe
 		fprintf(stderr, "SQL error: %s\n", sqlite3_errmsg(db));
 	}
 	sqlite3_close(db);
+	vector<Contact*> contacts;
+	return contacts;
 }
 
 // deletes a row based on rowid.
@@ -319,6 +340,7 @@ bool DatabaseHelper::deleteRow(int id) {
 		sqlite3_close(db);
 		return false;
 	}
+	return false;
 }
 
 // updates a row based on rowid.
@@ -341,7 +363,7 @@ bool DatabaseHelper::updateRow(int id, string name, string phoneNumber,
 
 		while (rc == SQLITE_ROW){
 
-			int row_id = sqlite3_column_int64(stmt,0);
+			int row_id = (int) sqlite3_column_int64(stmt,0);
 			string row_name = string((char*)sqlite3_column_text(stmt, 1));
 			string row_phoneNumber = string((char*)sqlite3_column_text(stmt, 2));
 			string row_address = string((char*)sqlite3_column_text(stmt, 3));
@@ -406,6 +428,7 @@ bool DatabaseHelper::updateRow(int id, string name, string phoneNumber,
 		sqlite3_close(db);
 		return false;
 	}
+	return false;
 }
 
 // Callback function for when sqlite3_exec is called.
@@ -427,7 +450,7 @@ vector<Contact*> DatabaseHelper::getContactsFromDB(int rc, sqlite3_stmt *stmt){
 	vector<Contact*> contacts = vector<Contact*>();
 	while (rc == SQLITE_ROW)
 	{
-		int row_id = sqlite3_column_int64(stmt,0);
+		int row_id = (int) sqlite3_column_int64(stmt, 0);
 		string row_name = string((char*)sqlite3_column_text(stmt, 1));
 		string row_phoneNumber = string((char*)sqlite3_column_text(stmt, 2));
 		string row_address = string((char*)sqlite3_column_text(stmt, 3));

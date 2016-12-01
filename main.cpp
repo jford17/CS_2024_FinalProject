@@ -12,7 +12,7 @@ int main(){
 //	if (db.deleteRow(4)){
 //		cout <<  "Deleted row with rowid 4" << endl;
 //	}
-	vector<Contact*> johns = db.getContactByPhoneNumber("123-456-7890");
+	vector<Contact*> johns = db.getContactByName("John");
 	for (int i = 0; i < johns.size(); i++) {
 		johns[i]->printDetails();
 	}
